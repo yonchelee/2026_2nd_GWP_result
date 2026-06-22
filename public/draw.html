@@ -331,6 +331,12 @@
     scopeSel.addEventListener("change", loadPool);
     window.addEventListener("resize", () => { /* 경계는 매 프레임 재계산되어 자동 대응 */ });
 
+    // 랜딩 페이지의 바로가기 버튼(?scope=)으로 진입 시 추첨 범위 자동 선택
+    const initScope = new URLSearchParams(location.search).get("scope");
+    if (initScope && ["all", "1", "2", "3"].includes(initScope)) {
+      scopeSel.value = initScope;
+    }
+
     /* ============================================================
        컨페티(폭죽) — 캔버스 파티클
        ============================================================ */
