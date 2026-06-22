@@ -8,7 +8,7 @@ pages_build_output_dir = "public"
 [[d1_databases]]
 binding = "DB"
 database_name = "gwp-2026-2nd"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "6821cf25-350c-4864-9a83-67f51039271c"
 
 # 관리자 비밀번호는 코드/설정에 두지 말고 Secret 으로 등록하세요:
 #   npx wrangler pages secret put ADMIN_PASSWORD
