@@ -6,16 +6,139 @@
   <title>추첨 (관리자) — AI 첫발, 함께 내딛다</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @keyframes flip { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-    .rolling { animation: flip .25s ease-in-out infinite; }
+    /* ===== 추첨기(럭비공 추첨기) 비주얼 ===== */
+    .machine { position: relative; width: 340px; max-width: 92vw; margin: 0 auto; }
+
+    /* 드럼: 투명 다각형(헥사곤) 유리 + 은색 프레임 */
+    .drum-frame {
+      position: relative;
+      width: 100%; aspect-ratio: 1 / 0.96;
+      clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+      background: linear-gradient(160deg, #e2e8f0, #94a3b8);
+      padding: 8px;
+      transform-origin: 50% 60%;
+    }
+    .drum {
+      position: relative; width: 100%; height: 100%;
+      clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+      background:
+        radial-gradient(120% 80% at 30% 18%, rgba(255,255,255,.55), rgba(255,255,255,0) 45%),
+        linear-gradient(160deg, rgba(186,230,253,.35), rgba(199,210,254,.25));
+      overflow: hidden;
+      box-shadow: inset 0 0 30px rgba(255,255,255,.4);
+    }
+    /* 유리 광택 */
+    .drum::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(115deg, rgba(255,255,255,.35) 0 18%, transparent 22% 100%);
+      pointer-events: none;
+    }
+
+    /* 공 */
+    .ball {
+      position: absolute; width: 46px; height: 46px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: #334155;
+      text-align: center; line-height: 1.05; padding: 0 3px;
+      overflow: hidden; word-break: break-all;
+      box-shadow: inset -6px -7px 10px rgba(0,0,0,.18), inset 5px 5px 8px rgba(255,255,255,.55), 0 2px 4px rgba(0,0,0,.15);
+      will-change: transform;
+      animation: float var(--dur, 2.4s) ease-in-out infinite alternate;
+      animation-delay: var(--delay, 0s);
+    }
+    .ball::before { /* 하이라이트 점 */
+      content: ""; position: absolute; top: 7px; left: 9px;
+      width: 12px; height: 9px; border-radius: 50%;
+      background: rgba(255,255,255,.7); filter: blur(1px);
+    }
+    @keyframes float {
+      from { transform: translate(calc(var(--dx) * -1px), calc(var(--dy) * -1px)) rotate(-8deg); }
+      to   { transform: translate(calc(var(--dx) * 1px), calc(var(--dy) * 1px)) rotate(8deg); }
+    }
+
+    /* 섞임(돌아가는) 상태 */
+    .machine.spinning .drum-frame { animation: drumWobble .6s ease-in-out infinite; }
+    @keyframes drumWobble {
+      0%,100% { transform: rotate(-3deg); }
+      50%     { transform: rotate(3deg); }
+    }
+    .machine.spinning .ball {
+      animation: shake var(--sdur, .32s) ease-in-out infinite alternate;
+    }
+    @keyframes shake {
+      from { transform: translate(calc(var(--dx) * -1.8px), calc(var(--dy) * -2px)) rotate(-40deg); }
+      to   { transform: translate(calc(var(--dx) * 2px), calc(var(--dy) * 1.6px)) rotate(40deg); }
+    }
+
+    /* 슈트 + 받침대 */
+    .chute {
+      position: relative; width: 70%; height: 26px; margin: -6px auto 0;
+      background: linear-gradient(180deg, rgba(203,213,225,.5), rgba(148,163,184,.35));
+      border: 1px solid rgba(226,232,240,.5);
+      border-top: none;
+      clip-path: polygon(18% 0, 82% 0, 100% 100%, 0% 100%);
+    }
+    .base {
+      position: relative; width: 100%; height: 54px; margin-top: -2px;
+      background: linear-gradient(180deg, #ef4444, #b91c1c);
+      border-radius: 10px 10px 14px 14px;
+      box-shadow: inset 0 3px 6px rgba(255,255,255,.25), 0 8px 16px rgba(0,0,0,.4);
+    }
+    .base::before { /* 출구 */
+      content: ""; position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+      width: 56px; height: 16px; background: #0f172a; border-radius: 0 0 8px 8px;
+      box-shadow: inset 0 3px 5px rgba(0,0,0,.6);
+    }
+    .crank { /* 손잡이 */
+      position: absolute; right: -18px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; border-radius: 50%; background: #b91c1c;
+      box-shadow: 0 0 0 4px #ef4444, 0 0 0 6px #7f1d1d;
+    }
+    .crank::after {
+      content: ""; position: absolute; right: -22px; top: 50%; transform: translateY(-50%);
+      width: 22px; height: 6px; border-radius: 3px; background: #9ca3af;
+    }
+    .machine.spinning .crank { animation: crankSpin .6s linear infinite; }
+    @keyframes crankSpin { to { transform: translateY(-50%) rotate(360deg); } }
+
+    /* 트레이(당첨 공이 담기는 곳) */
+    .tray {
+      display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;
+      min-height: 10px;
+    }
+    .win-ball {
+      width: 96px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .win-ball .orb {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; color: #334155; text-align: center;
+      padding: 0 4px; word-break: break-all; line-height: 1.1; position: relative;
+      box-shadow: inset -7px -8px 12px rgba(0,0,0,.18), inset 6px 6px 10px rgba(255,255,255,.6), 0 4px 10px rgba(0,0,0,.35);
+    }
+    .win-ball .orb::before {
+      content: ""; position: absolute; top: 11px; left: 14px;
+      width: 16px; height: 11px; border-radius: 50%; background: rgba(255,255,255,.7); filter: blur(1px);
+    }
+    .win-ball .meta { font-size: 11px; color: #cbd5e1; text-align: center; }
+
+    /* 낙하 중인 공(고정 위치 클론) */
+    .drop-ball {
+      position: fixed; width: 56px; height: 56px; border-radius: 50%; z-index: 50;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: #334155; text-align: center;
+      padding: 0 4px; word-break: break-all; line-height: 1.1;
+      box-shadow: inset -7px -8px 12px rgba(0,0,0,.18), inset 6px 6px 10px rgba(255,255,255,.6), 0 4px 10px rgba(0,0,0,.4);
+      pointer-events: none;
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
   <div id="nav"></div>
 
-  <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-12">
+  <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-10">
     <h1 class="text-3xl font-bold mb-2">🎰 추첨 (관리자 전용)</h1>
-    <p class="text-slate-400 mb-8">등록자 중에서 무작위로 당첨자를 추첨합니다.</p>
+    <p class="text-slate-400 mb-6">등록자 이름이 적힌 공이 추첨기 안에서 섞이다가 떨어집니다.</p>
 
     <form id="form" class="bg-slate-800 rounded-2xl border border-slate-700 p-6 space-y-5">
       <div class="grid sm:grid-cols-2 gap-4">
@@ -50,11 +173,25 @@
       <div id="message" class="text-sm"></div>
     </form>
 
-    <!-- 추첨 결과 -->
-    <div id="result" class="mt-10 hidden">
-      <h2 class="text-xl font-bold mb-4 text-center">🎉 당첨자 🎉</h2>
-      <div id="prizeLabel" class="text-center text-amber-300 mb-4"></div>
-      <div id="winners" class="space-y-3"></div>
+    <!-- 추첨기 -->
+    <section class="mt-10 text-center">
+      <div id="poolInfo" class="text-sm text-slate-400 mb-4"></div>
+      <div class="machine" id="machine">
+        <div class="drum-frame">
+          <div class="drum"><div class="balls" id="balls"></div></div>
+        </div>
+        <div class="chute"></div>
+        <div class="base"><span class="crank"></span></div>
+        <!-- 공이 빠져나오는 출구 기준점 -->
+        <div id="exit" style="position:absolute; left:50%; bottom:40px; width:1px; height:1px;"></div>
+      </div>
+    </section>
+
+    <!-- 당첨 결과 -->
+    <div id="result" class="mt-12 hidden">
+      <h2 class="text-2xl font-bold mb-2 text-center">🎉 당첨자 🎉</h2>
+      <div id="prizeLabel" class="text-center text-amber-300 mb-6"></div>
+      <div id="tray" class="tray"></div>
     </div>
   </main>
 
@@ -62,23 +199,125 @@
     import { api, renderNav, ACTIVITIES, escapeHtml } from "/js/common.js";
     document.getElementById("nav").innerHTML = renderNav(null);
 
+    // 파스텔 공 색상 팔레트
+    const COLORS = ["#f9a8d4","#93c5fd","#86efac","#fde68a","#fdba74","#c4b5fd","#67e8f9","#fca5a5","#a7f3d0"];
+    const colorFor = (i) => COLORS[i % COLORS.length];
+    const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+
     const form = document.getElementById("form");
     const submit = document.getElementById("submit");
     const msg = document.getElementById("message");
+    const machine = document.getElementById("machine");
+    const ballsBox = document.getElementById("balls");
+    const exit = document.getElementById("exit");
+    const poolInfo = document.getElementById("poolInfo");
     const resultBox = document.getElementById("result");
-    const winnersBox = document.getElementById("winners");
+    const tray = document.getElementById("tray");
     const prizeLabel = document.getElementById("prizeLabel");
+    const scopeSel = document.getElementById("scope");
 
-    function winnerRow(w, revealed) {
+    // 공 라벨: 이름이 길면 잘라서 표시
+    const shortName = (n) => (n.length > 6 ? n.slice(0, 5) + "…" : n);
+
+    // 드럼 안에 후보 공들을 무작위 위치로 배치
+    function renderPool(registrations) {
+      ballsBox.innerHTML = "";
+      const list = registrations.slice(0, 40); // 시각화용 최대 40개
+      const rect = ballsBox.getBoundingClientRect();
+      const W = rect.width || 300, H = rect.height || 290;
+      list.forEach((r, i) => {
+        const b = document.createElement("div");
+        b.className = "ball";
+        b.style.background = colorFor(i);
+        // 헥사곤 중앙 영역에 분포 (가장자리 여백)
+        const x = 30 + Math.random() * (W - 90);
+        const y = 30 + Math.random() * (H - 90);
+        b.style.left = x + "px";
+        b.style.top = y + "px";
+        b.style.setProperty("--dx", (6 + Math.random() * 12).toFixed(1));
+        b.style.setProperty("--dy", (6 + Math.random() * 12).toFixed(1));
+        b.style.setProperty("--dur", (1.8 + Math.random() * 1.6).toFixed(2) + "s");
+        b.style.setProperty("--sdur", (0.26 + Math.random() * 0.16).toFixed(2) + "s");
+        b.style.setProperty("--delay", (Math.random() * 1).toFixed(2) + "s");
+        b.title = r.name;
+        b.textContent = shortName(r.name);
+        ballsBox.appendChild(b);
+      });
+      const extra = registrations.length - list.length;
+      poolInfo.textContent = registrations.length
+        ? `현재 추첨함에 ${registrations.length}명의 공이 들어 있어요${extra > 0 ? ` (${list.length}개 표시)` : ""}.`
+        : "추첨함이 비어 있어요. 등록자가 있어야 추첨할 수 있습니다.";
+    }
+
+    // 현재 선택된 범위의 후보 불러오기
+    async function loadPool() {
+      const scope = scopeSel.value;
+      const q = scope === "all" ? "" : `?activity=${scope}`;
+      try {
+        const { registrations } = await api(`/api/registrations${q}`);
+        renderPool(registrations);
+      } catch (err) {
+        poolInfo.textContent = "후보를 불러오지 못했습니다: " + err.message;
+      }
+    }
+
+    scopeSel.addEventListener("change", loadPool);
+    loadPool();
+
+    // 당첨 공 하나를 추첨기에서 트레이로 떨어뜨리는 애니메이션
+    async function dropWinner(w, idx) {
+      const color = colorFor(idx);
+
+      // 트레이에 빈 슬롯(카드) 먼저 배치해 도착 위치 확보
+      const card = document.createElement("div");
+      card.className = "win-ball";
       const a = ACTIVITIES[w.activity];
-      return `
-        <div class="bg-slate-800 border border-amber-500/40 rounded-xl px-5 py-4 flex items-center gap-4 ${revealed ? "" : "rolling"}">
-          <span class="text-2xl">${a ? a.emoji : "🎁"}</span>
-          <div>
-            <div class="font-bold text-lg text-amber-300">${escapeHtml(w.name)}</div>
-            <div class="text-xs text-slate-400">${a ? a.label : ""}</div>
-          </div>
-        </div>`;
+      card.innerHTML = `
+        <div class="orb" style="background:${color}" title="${escapeHtml(w.name)}">${escapeHtml(shortName(w.name))}</div>
+        <div class="meta"><span class="font-semibold text-amber-300">${escapeHtml(w.name)}</span><br>${a ? a.emoji + " " + escapeHtml(a.label) : ""}</div>`;
+      card.style.visibility = "hidden";
+      tray.appendChild(card);
+
+      const orb = card.querySelector(".orb");
+      const target = orb.getBoundingClientRect();
+      const start = exit.getBoundingClientRect();
+
+      // 낙하 공 클론 생성 (화면 고정 좌표)
+      const drop = document.createElement("div");
+      drop.className = "drop-ball";
+      drop.style.background = color;
+      drop.textContent = shortName(w.name);
+      drop.style.left = start.left - 28 + "px";
+      drop.style.top = start.top - 28 + "px";
+      document.body.appendChild(drop);
+
+      const sx = start.left - 28, sy = start.top - 28;
+      const tx = target.left + target.width / 2 - 28;
+      const ty = target.top + target.height / 2 - 28;
+
+      const anim = drop.animate(
+        [
+          { left: sx + "px", top: sy + "px", offset: 0 },
+          { left: sx + "px", top: sy + 34 + "px", offset: 0.35 },      // 슈트 빠져나옴
+          { left: (sx + tx) / 2 + "px", top: ty - 40 + "px", offset: 0.7 }, // 포물선
+          { left: tx + "px", top: ty + "px", offset: 1 },               // 트레이 도착
+        ],
+        { duration: 1100, easing: "cubic-bezier(.45,.05,.55,1)", fill: "forwards" }
+      );
+      await anim.finished;
+      drop.remove();
+
+      // 카드 등장(팝)
+      card.style.visibility = "visible";
+      card.animate(
+        [
+          { transform: "scale(.2)", opacity: 0 },
+          { transform: "scale(1.18)", opacity: 1, offset: 0.7 },
+          { transform: "scale(1)" },
+        ],
+        { duration: 320, easing: "ease-out" }
+      );
+      await delay(180);
     }
 
     form.addEventListener("submit", async (e) => {
@@ -86,13 +325,20 @@
       msg.textContent = "";
       submit.disabled = true;
       submit.textContent = "추첨 중...";
+      resultBox.classList.add("hidden");
+      tray.innerHTML = "";
 
       const payload = {
-        scope: document.getElementById("scope").value,
+        scope: scopeSel.value,
         count: Number(document.getElementById("count").value),
         prize: document.getElementById("prize").value.trim(),
         password: document.getElementById("password").value,
       };
+
+      // 드럼 돌리기 시작
+      machine.classList.add("spinning");
+      const spinMs = 2600;
+      const startedAt = Date.now();
 
       try {
         const data = await api("/api/draw", {
@@ -100,25 +346,32 @@
           body: JSON.stringify(payload),
         });
 
-        // 결과 표시 (먼저 롤링 애니메이션 → 순차 공개)
-        resultBox.classList.remove("hidden");
-        prizeLabel.textContent = data.draw.prize ? `🎁 경품: ${data.draw.prize}` : "";
-        winnersBox.innerHTML = data.winners.map((w) => winnerRow(w, false)).join("");
-        resultBox.scrollIntoView({ behavior: "smooth" });
+        // 최소 스핀 시간 보장
+        const remain = Math.max(0, spinMs - (Date.now() - startedAt));
+        await delay(remain);
+        machine.classList.remove("spinning");
+        await delay(250);
 
-        // 1.5초 롤링 후 공개
-        setTimeout(() => {
-          winnersBox.innerHTML = data.winners.map((w) => winnerRow(w, true)).join("");
-        }, 1500);
+        // 결과 영역 준비
+        prizeLabel.textContent = data.draw.prize ? `🎁 경품: ${data.draw.prize}` : "";
+        resultBox.classList.remove("hidden");
+        resultBox.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        // 당첨 공 순차 낙하
+        for (let i = 0; i < data.winners.length; i++) {
+          await dropWinner(data.winners[i], i);
+        }
 
         msg.className = "text-sm text-emerald-400";
         msg.textContent = `총 ${data.draw.total_candidates}명 중 ${data.winners.length}명 추첨 완료.`;
       } catch (err) {
+        machine.classList.remove("spinning");
         msg.className = "text-sm text-rose-400";
         msg.textContent = "⚠️ " + err.message;
       } finally {
         submit.disabled = false;
         submit.textContent = "🎲 추첨 시작";
+        loadPool(); // 후보 공 다시 채우기
       }
     });
   </script>
