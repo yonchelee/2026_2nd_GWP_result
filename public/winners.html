@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당첨 결과 — AI 첫발, 함께 내딛다</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+  <div id="nav"></div>
+
+  <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-12">
+    <h1 class="text-3xl font-bold mb-2">🏆 당첨 결과</h1>
+    <p class="text-slate-500 mb-8">진행된 추첨의 당첨자 목록입니다.</p>
+
+    <div id="content" class="space-y-6">
+      <p class="text-slate-400">불러오는 중...</p>
+    </div>
+  </main>
+
+  <script type="module">
+    import { api, renderNav, ACTIVITIES, escapeHtml } from "/js/common.js";
+    document.getElementById("nav").innerHTML = renderNav("/winners.html");
+
+    const content = document.getElementById("content");
+    const scopeLabel = (s) =>
+      s === "all" ? "전체 등록자" : `${s}. ${ACTIVITIES[s]?.label ?? ""}`;
+
+    try {
+      const { history } = await api("/api/winners");
+      if (!history.length) {
+        content.innerHTML = `<p class="text-slate-400">아직 진행된 추첨이 없습니다.</p>`;
+      } else {
+        content.innerHTML = history
+          .map((d) => `
+            <section class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+              <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <h2 class="font-bold text-lg">${d.prize ? "🎁 " + escapeHtml(d.prize) : "추첨"}</h2>
+                <span class="text-xs text-slate-400">${escapeHtml(d.drawn_at)} · ${escapeHtml(scopeLabel(String(d.scope)))}</span>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                ${d.winners
+                  .map(
+                    (w) => `<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-3 py-1 text-sm font-medium">${ACTIVITIES[w.activity]?.emoji ?? "🎉"} ${escapeHtml(w.name)}</span>`
+                  )
+                  .join("")}
+              </div>
+            </section>`)
+          .join("");
+      }
+    } catch (err) {
+      content.innerHTML = `<p class="text-rose-600">⚠️ ${escapeHtml(err.message)}</p>`;
+    }
+  </script>
+</body>
+</html>

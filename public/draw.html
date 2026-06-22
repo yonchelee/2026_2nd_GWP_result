@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>추첨 (관리자) — AI 첫발, 함께 내딛다</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes flip { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .rolling { animation: flip .25s ease-in-out infinite; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+  <div id="nav"></div>
+
+  <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-12">
+    <h1 class="text-3xl font-bold mb-2">🎰 추첨 (관리자 전용)</h1>
+    <p class="text-slate-400 mb-8">등록자 중에서 무작위로 당첨자를 추첨합니다.</p>
+
+    <form id="form" class="bg-slate-800 rounded-2xl border border-slate-700 p-6 space-y-5">
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-semibold mb-2 text-sm">추첨 범위</label>
+          <select id="scope" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500">
+            <option value="all">전체 등록자</option>
+            <option value="1">1. AI로 파이썬 프로그램 개발</option>
+            <option value="2">2. 웹페이지 개발 & GitHub 등록</option>
+            <option value="3">3. AI 어시스턴트 만들기</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold mb-2 text-sm">당첨 인원</label>
+          <input id="count" type="number" min="1" value="1" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-semibold mb-2 text-sm">경품 (선택)</label>
+        <input id="prize" type="text" placeholder="예: 스타벅스 기프티콘" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500" />
+      </div>
+
+      <div>
+        <label class="block font-semibold mb-2 text-sm">관리자 비밀번호</label>
+        <input id="password" type="password" required class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500" />
+      </div>
+
+      <button type="submit" id="submit" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold py-3 rounded-xl hover:from-amber-400 hover:to-orange-400 transition disabled:opacity-50">
+        🎲 추첨 시작
+      </button>
+      <div id="message" class="text-sm"></div>
+    </form>
+
+    <!-- 추첨 결과 -->
+    <div id="result" class="mt-10 hidden">
+      <h2 class="text-xl font-bold mb-4 text-center">🎉 당첨자 🎉</h2>
+      <div id="prizeLabel" class="text-center text-amber-300 mb-4"></div>
+      <div id="winners" class="space-y-3"></div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { api, renderNav, ACTIVITIES, escapeHtml } from "/js/common.js";
+    document.getElementById("nav").innerHTML = renderNav(null);
+
+    const form = document.getElementById("form");
+    const submit = document.getElementById("submit");
+    const msg = document.getElementById("message");
+    const resultBox = document.getElementById("result");
+    const winnersBox = document.getElementById("winners");
+    const prizeLabel = document.getElementById("prizeLabel");
+
+    function winnerRow(w, revealed) {
+      const a = ACTIVITIES[w.activity];
+      return `
+        <div class="bg-slate-800 border border-amber-500/40 rounded-xl px-5 py-4 flex items-center gap-4 ${revealed ? "" : "rolling"}">
+          <span class="text-2xl">${a ? a.emoji : "🎁"}</span>
+          <div>
+            <div class="font-bold text-lg text-amber-300">${escapeHtml(w.name)}</div>
+            <div class="text-xs text-slate-400">${a ? a.label : ""}</div>
+          </div>
+        </div>`;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+      submit.disabled = true;
+      submit.textContent = "추첨 중...";
+
+      const payload = {
+        scope: document.getElementById("scope").value,
+        count: Number(document.getElementById("count").value),
+        prize: document.getElementById("prize").value.trim(),
+        password: document.getElementById("password").value,
+      };
+
+      try {
+        const data = await api("/api/draw", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+
+        // 결과 표시 (먼저 롤링 애니메이션 → 순차 공개)
+        resultBox.classList.remove("hidden");
+        prizeLabel.textContent = data.draw.prize ? `🎁 경품: ${data.draw.prize}` : "";
+        winnersBox.innerHTML = data.winners.map((w) => winnerRow(w, false)).join("");
+        resultBox.scrollIntoView({ behavior: "smooth" });
+
+        // 1.5초 롤링 후 공개
+        setTimeout(() => {
+          winnersBox.innerHTML = data.winners.map((w) => winnerRow(w, true)).join("");
+        }, 1500);
+
+        msg.className = "text-sm text-emerald-400";
+        msg.textContent = `총 ${data.draw.total_candidates}명 중 ${data.winners.length}명 추첨 완료.`;
+      } catch (err) {
+        msg.className = "text-sm text-rose-400";
+        msg.textContent = "⚠️ " + err.message;
+      } finally {
+        submit.disabled = false;
+        submit.textContent = "🎲 추첨 시작";
+      }
+    });
+  </script>
+</body>
+</html>

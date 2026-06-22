@@ -1,0 +1,15 @@
+name = "gwp-2026-2nd-result"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "public"
+
+# D1 데이터베이스 바인딩.
+# 배포 전 `npx wrangler d1 create gwp-2026-2nd` 로 생성한 뒤
+# 출력된 database_id 를 아래에 채워 넣으세요.
+[[d1_databases]]
+binding = "DB"
+database_name = "gwp-2026-2nd"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+# 관리자 비밀번호는 코드/설정에 두지 말고 Secret 으로 등록하세요:
+#   npx wrangler pages secret put ADMIN_PASSWORD
+# (로컬 개발 시에는 .dev.vars 파일에 ADMIN_PASSWORD=... 로 지정)
