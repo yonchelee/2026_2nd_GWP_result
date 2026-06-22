@@ -27,6 +27,7 @@
       overflow: hidden;
       box-shadow: inset 0 0 30px rgba(255,255,255,.4);
     }
+    .balls { position: absolute; inset: 0; }
     /* 유리 광택 */
     .drum::after {
       content: ""; position: absolute; inset: 0;
@@ -34,48 +35,35 @@
       pointer-events: none;
     }
 
-    /* 공 */
+    /* 공 (위치/회전은 JS 물리 엔진이 transform 으로 제어) */
     .ball {
-      position: absolute; width: 46px; height: 46px; border-radius: 50%;
+      position: absolute; top: 0; left: 0;
+      width: 38px; height: 38px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 10px; font-weight: 700; color: #334155;
-      text-align: center; line-height: 1.05; padding: 0 3px;
+      font-size: 9px; font-weight: 700; color: #334155;
+      text-align: center; line-height: 1.0; padding: 0 2px;
       overflow: hidden; word-break: break-all;
-      box-shadow: inset -6px -7px 10px rgba(0,0,0,.18), inset 5px 5px 8px rgba(255,255,255,.55), 0 2px 4px rgba(0,0,0,.15);
+      box-shadow: inset -5px -6px 9px rgba(0,0,0,.18), inset 4px 4px 7px rgba(255,255,255,.55), 0 2px 4px rgba(0,0,0,.18);
       will-change: transform;
-      animation: float var(--dur, 2.4s) ease-in-out infinite alternate;
-      animation-delay: var(--delay, 0s);
     }
     .ball::before { /* 하이라이트 점 */
-      content: ""; position: absolute; top: 7px; left: 9px;
-      width: 12px; height: 9px; border-radius: 50%;
+      content: ""; position: absolute; top: 6px; left: 8px;
+      width: 10px; height: 7px; border-radius: 50%;
       background: rgba(255,255,255,.7); filter: blur(1px);
     }
-    @keyframes float {
-      from { transform: translate(calc(var(--dx) * -1px), calc(var(--dy) * -1px)) rotate(-8deg); }
-      to   { transform: translate(calc(var(--dx) * 1px), calc(var(--dy) * 1px)) rotate(8deg); }
-    }
 
-    /* 섞임(돌아가는) 상태 */
-    .machine.spinning .drum-frame { animation: drumWobble .6s ease-in-out infinite; }
+    /* 드럼 흔들림(섞는 동안) */
+    .machine.spinning .drum-frame { animation: drumWobble .5s ease-in-out infinite; }
     @keyframes drumWobble {
-      0%,100% { transform: rotate(-3deg); }
-      50%     { transform: rotate(3deg); }
-    }
-    .machine.spinning .ball {
-      animation: shake var(--sdur, .32s) ease-in-out infinite alternate;
-    }
-    @keyframes shake {
-      from { transform: translate(calc(var(--dx) * -1.8px), calc(var(--dy) * -2px)) rotate(-40deg); }
-      to   { transform: translate(calc(var(--dx) * 2px), calc(var(--dy) * 1.6px)) rotate(40deg); }
+      0%,100% { transform: rotate(-3.5deg); }
+      50%     { transform: rotate(3.5deg); }
     }
 
     /* 슈트 + 받침대 */
     .chute {
       position: relative; width: 70%; height: 26px; margin: -6px auto 0;
       background: linear-gradient(180deg, rgba(203,213,225,.5), rgba(148,163,184,.35));
-      border: 1px solid rgba(226,232,240,.5);
-      border-top: none;
+      border: 1px solid rgba(226,232,240,.5); border-top: none;
       clip-path: polygon(18% 0, 82% 0, 100% 100%, 0% 100%);
     }
     .base {
@@ -98,17 +86,12 @@
       content: ""; position: absolute; right: -22px; top: 50%; transform: translateY(-50%);
       width: 22px; height: 6px; border-radius: 3px; background: #9ca3af;
     }
-    .machine.spinning .crank { animation: crankSpin .6s linear infinite; }
+    .machine.spinning .crank { animation: crankSpin .5s linear infinite; }
     @keyframes crankSpin { to { transform: translateY(-50%) rotate(360deg); } }
 
     /* 트레이(당첨 공이 담기는 곳) */
-    .tray {
-      display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;
-      min-height: 10px;
-    }
-    .win-ball {
-      width: 96px; display: flex; flex-direction: column; align-items: center; gap: 6px;
-    }
+    .tray { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; min-height: 10px; }
+    .win-ball { width: 96px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .win-ball .orb {
       width: 72px; height: 72px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
@@ -124,21 +107,25 @@
 
     /* 낙하 중인 공(고정 위치 클론) */
     .drop-ball {
-      position: fixed; width: 56px; height: 56px; border-radius: 50%; z-index: 50;
+      position: fixed; width: 50px; height: 50px; border-radius: 50%; z-index: 60;
       display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 800; color: #334155; text-align: center;
+      font-size: 10px; font-weight: 800; color: #334155; text-align: center;
       padding: 0 4px; word-break: break-all; line-height: 1.1;
       box-shadow: inset -7px -8px 12px rgba(0,0,0,.18), inset 6px 6px 10px rgba(255,255,255,.6), 0 4px 10px rgba(0,0,0,.4);
       pointer-events: none;
     }
+
+    /* 컨페티 캔버스 */
+    #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 70; }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+  <canvas id="confetti"></canvas>
   <div id="nav"></div>
 
   <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-10">
     <h1 class="text-3xl font-bold mb-2">🎰 추첨 (관리자 전용)</h1>
-    <p class="text-slate-400 mb-6">등록자 이름이 적힌 공이 추첨기 안에서 섞이다가 떨어집니다.</p>
+    <p class="text-slate-400 mb-6">등록자 이름이 적힌 공이 추첨기 안에서 굴러다니다 떨어집니다.</p>
 
     <form id="form" class="bg-slate-800 rounded-2xl border border-slate-700 p-6 space-y-5">
       <div class="grid sm:grid-cols-2 gap-4">
@@ -182,7 +169,6 @@
         </div>
         <div class="chute"></div>
         <div class="base"><span class="crank"></span></div>
-        <!-- 공이 빠져나오는 출구 기준점 -->
         <div id="exit" style="position:absolute; left:50%; bottom:40px; width:1px; height:1px;"></div>
       </div>
     </section>
@@ -199,10 +185,10 @@
     import { api, renderNav, ACTIVITIES, escapeHtml } from "/js/common.js";
     document.getElementById("nav").innerHTML = renderNav(null);
 
-    // 파스텔 공 색상 팔레트
     const COLORS = ["#f9a8d4","#93c5fd","#86efac","#fde68a","#fdba74","#c4b5fd","#67e8f9","#fca5a5","#a7f3d0"];
     const colorFor = (i) => COLORS[i % COLORS.length];
     const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+    const rand = (a, b) => a + Math.random() * (b - a);
 
     const form = document.getElementById("form");
     const submit = document.getElementById("submit");
@@ -216,40 +202,122 @@
     const prizeLabel = document.getElementById("prizeLabel");
     const scopeSel = document.getElementById("scope");
 
-    // 공 라벨: 이름이 길면 잘라서 표시
-    const shortName = (n) => (n.length > 6 ? n.slice(0, 5) + "…" : n);
+    const shortName = (n) => (n.length > 5 ? n.slice(0, 4) + "…" : n);
 
-    // 드럼 안에 후보 공들을 무작위 위치로 배치
+    /* ============================================================
+       드럼 물리 엔진 — 원형 경계 안에서 중력 + 벽 반사 + 공끼리 충돌
+       ============================================================ */
+    const BALL_R = 19;            // 공 반지름 (CSS 38px)
+    const GRAVITY = 0.5;
+    const REST = 0.55;            // 벽 반발 계수
+    const AIR = 0.992;            // 공기 저항
+    const MAX_V = 16;
+    let balls = [];               // {el, x, y, vx, vy, ang, va}
+    let spinning = false;
+    let physRAF = null;
+
+    function drumGeom() {
+      const w = ballsBox.clientWidth || 300;
+      const h = ballsBox.clientHeight || 290;
+      return { w, h, cx: w / 2, cy: h / 2, R: Math.min(w, h) / 2 - BALL_R - 2 };
+    }
+
+    function step() {
+      const { cx, cy, R } = drumGeom();
+      const n = balls.length;
+
+      for (const b of balls) {
+        if (spinning) {
+          // 송풍기처럼 무작위로 띄워 올리며 섞기
+          b.vx += rand(-1.4, 1.4);
+          b.vy += rand(-1.4, 1.4) - 1.6;
+        }
+        b.vy += GRAVITY;
+        b.vx *= AIR; b.vy *= AIR;
+        // 속도 제한
+        const sp = Math.hypot(b.vx, b.vy);
+        if (sp > MAX_V) { b.vx = (b.vx / sp) * MAX_V; b.vy = (b.vy / sp) * MAX_V; }
+        b.x += b.vx; b.y += b.vy;
+      }
+
+      // 공끼리 충돌 (동일 질량, 위치 분리 + 속도 교환)
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const a = balls[i], c = balls[j];
+          let dx = c.x - a.x, dy = c.y - a.y;
+          let d = Math.hypot(dx, dy);
+          const min = BALL_R * 2;
+          if (d > 0 && d < min) {
+            const nx = dx / d, ny = dy / d;
+            const overlap = (min - d) / 2;
+            a.x -= nx * overlap; a.y -= ny * overlap;
+            c.x += nx * overlap; c.y += ny * overlap;
+            const dvx = c.vx - a.vx, dvy = c.vy - a.vy;
+            const rel = dvx * nx + dvy * ny;
+            if (rel < 0) {
+              const imp = rel * REST;
+              a.vx += imp * nx; a.vy += imp * ny;
+              c.vx -= imp * nx; c.vy -= imp * ny;
+              a.va += rel * 0.4; c.va -= rel * 0.4;
+            }
+          }
+        }
+      }
+
+      // 원형 벽 반사
+      for (const b of balls) {
+        const dx = b.x - cx, dy = b.y - cy;
+        const dist = Math.hypot(dx, dy);
+        if (dist > R) {
+          const nx = dx / dist, ny = dy / dist;
+          b.x = cx + nx * R; b.y = cy + ny * R;
+          const vdot = b.vx * nx + b.vy * ny;
+          b.vx -= (1 + REST) * vdot * nx;
+          b.vy -= (1 + REST) * vdot * ny;
+          // 접선 마찰 → 굴러가는 회전감
+          const tx = -ny, ty = nx;
+          const vt = b.vx * tx + b.vy * ty;
+          b.va = b.va * 0.6 + vt * 0.9;
+          b.vx *= 0.985; b.vy *= 0.985;
+        }
+        b.ang += b.va;
+        b.el.style.transform = `translate(${(b.x - BALL_R).toFixed(1)}px, ${(b.y - BALL_R).toFixed(1)}px) rotate(${b.ang.toFixed(1)}deg)`;
+      }
+
+      physRAF = requestAnimationFrame(step);
+    }
+
+    function startPhysics() { if (!physRAF) physRAF = requestAnimationFrame(step); }
+
     function renderPool(registrations) {
       ballsBox.innerHTML = "";
-      const list = registrations.slice(0, 40); // 시각화용 최대 40개
-      const rect = ballsBox.getBoundingClientRect();
-      const W = rect.width || 300, H = rect.height || 290;
-      list.forEach((r, i) => {
-        const b = document.createElement("div");
-        b.className = "ball";
-        b.style.background = colorFor(i);
-        // 헥사곤 중앙 영역에 분포 (가장자리 여백)
-        const x = 30 + Math.random() * (W - 90);
-        const y = 30 + Math.random() * (H - 90);
-        b.style.left = x + "px";
-        b.style.top = y + "px";
-        b.style.setProperty("--dx", (6 + Math.random() * 12).toFixed(1));
-        b.style.setProperty("--dy", (6 + Math.random() * 12).toFixed(1));
-        b.style.setProperty("--dur", (1.8 + Math.random() * 1.6).toFixed(2) + "s");
-        b.style.setProperty("--sdur", (0.26 + Math.random() * 0.16).toFixed(2) + "s");
-        b.style.setProperty("--delay", (Math.random() * 1).toFixed(2) + "s");
-        b.title = r.name;
-        b.textContent = shortName(r.name);
-        ballsBox.appendChild(b);
+      const { w, h, cx, cy, R } = drumGeom();
+      const list = registrations.slice(0, 30); // 물리 시뮬용 최대 30개
+      balls = list.map((r, i) => {
+        const el = document.createElement("div");
+        el.className = "ball";
+        el.style.background = colorFor(i);
+        el.title = r.name;
+        el.textContent = shortName(r.name);
+        ballsBox.appendChild(el);
+        // 원 안쪽 무작위 시작 위치
+        const ang = Math.random() * Math.PI * 2;
+        const rr = Math.random() * (R - 4);
+        return {
+          el,
+          x: cx + Math.cos(ang) * rr,
+          y: cy + Math.sin(ang) * rr,
+          vx: rand(-2, 2), vy: rand(-2, 2),
+          ang: rand(0, 360), va: rand(-4, 4),
+        };
       });
       const extra = registrations.length - list.length;
       poolInfo.textContent = registrations.length
         ? `현재 추첨함에 ${registrations.length}명의 공이 들어 있어요${extra > 0 ? ` (${list.length}개 표시)` : ""}.`
         : "추첨함이 비어 있어요. 등록자가 있어야 추첨할 수 있습니다.";
+      startPhysics();
     }
 
-    // 현재 선택된 범위의 후보 불러오기
     async function loadPool() {
       const scope = scopeSel.value;
       const q = scope === "all" ? "" : `?activity=${scope}`;
@@ -260,15 +328,56 @@
         poolInfo.textContent = "후보를 불러오지 못했습니다: " + err.message;
       }
     }
-
     scopeSel.addEventListener("change", loadPool);
-    loadPool();
+    window.addEventListener("resize", () => { /* 경계는 매 프레임 재계산되어 자동 대응 */ });
 
-    // 당첨 공 하나를 추첨기에서 트레이로 떨어뜨리는 애니메이션
+    /* ============================================================
+       컨페티(폭죽) — 캔버스 파티클
+       ============================================================ */
+    const cvs = document.getElementById("confetti");
+    const ctx = cvs.getContext("2d");
+    let confetti = [];
+    let confRAF = null;
+    function sizeCanvas() { cvs.width = innerWidth; cvs.height = innerHeight; }
+    sizeCanvas();
+    window.addEventListener("resize", sizeCanvas);
+
+    function confettiTick() {
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+      for (const p of confetti) {
+        p.vy += 0.22; p.vx *= 0.99;
+        p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= 0.009;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.62);
+        ctx.restore();
+      }
+      confetti = confetti.filter((p) => p.life > 0 && p.y < cvs.height + 30);
+      confRAF = confetti.length ? requestAnimationFrame(confettiTick) : null;
+    }
+    function burst(x, y, n = 90, spread = 9) {
+      for (let i = 0; i < n; i++) {
+        confetti.push({
+          x, y,
+          vx: rand(-spread, spread),
+          vy: rand(-15, -3),
+          s: rand(6, 12),
+          color: COLORS[(Math.random() * COLORS.length) | 0],
+          rot: rand(0, 6.28), vr: rand(-0.3, 0.3),
+          life: rand(0.9, 1.4),
+        });
+      }
+      if (!confRAF) confRAF = requestAnimationFrame(confettiTick);
+    }
+
+    /* ============================================================
+       당첨 공 낙하 + 트레이 적재
+       ============================================================ */
     async function dropWinner(w, idx) {
       const color = colorFor(idx);
-
-      // 트레이에 빈 슬롯(카드) 먼저 배치해 도착 위치 확보
       const card = document.createElement("div");
       card.className = "win-ball";
       const a = ACTIVITIES[w.activity];
@@ -282,32 +391,30 @@
       const target = orb.getBoundingClientRect();
       const start = exit.getBoundingClientRect();
 
-      // 낙하 공 클론 생성 (화면 고정 좌표)
       const drop = document.createElement("div");
       drop.className = "drop-ball";
       drop.style.background = color;
       drop.textContent = shortName(w.name);
-      drop.style.left = start.left - 28 + "px";
-      drop.style.top = start.top - 28 + "px";
+      const sx = start.left - 25, sy = start.top - 25;
+      drop.style.left = sx + "px";
+      drop.style.top = sy + "px";
       document.body.appendChild(drop);
 
-      const sx = start.left - 28, sy = start.top - 28;
-      const tx = target.left + target.width / 2 - 28;
-      const ty = target.top + target.height / 2 - 28;
+      const tx = target.left + target.width / 2 - 25;
+      const ty = target.top + target.height / 2 - 25;
 
       const anim = drop.animate(
         [
           { left: sx + "px", top: sy + "px", offset: 0 },
-          { left: sx + "px", top: sy + 34 + "px", offset: 0.35 },      // 슈트 빠져나옴
-          { left: (sx + tx) / 2 + "px", top: ty - 40 + "px", offset: 0.7 }, // 포물선
-          { left: tx + "px", top: ty + "px", offset: 1 },               // 트레이 도착
+          { left: sx + "px", top: sy + 34 + "px", offset: 0.32 },
+          { left: (sx + tx) / 2 + "px", top: ty - 46 + "px", offset: 0.66 },
+          { left: tx + "px", top: ty + "px", offset: 1 },
         ],
         { duration: 1100, easing: "cubic-bezier(.45,.05,.55,1)", fill: "forwards" }
       );
       await anim.finished;
       drop.remove();
 
-      // 카드 등장(팝)
       card.style.visibility = "visible";
       card.animate(
         [
@@ -317,7 +424,16 @@
         ],
         { duration: 320, easing: "ease-out" }
       );
-      await delay(180);
+      // 당첨 순간 폭죽
+      burst(target.left + target.width / 2, target.top + target.height / 2, 70, 7);
+      await delay(220);
+    }
+
+    function finaleConfetti() {
+      // 양쪽에서 화면 중앙 위로 큰 폭죽
+      burst(cvs.width * 0.5, cvs.height * 0.35, 160, 13);
+      setTimeout(() => burst(cvs.width * 0.15, cvs.height * 0.4, 90, 9), 150);
+      setTimeout(() => burst(cvs.width * 0.85, cvs.height * 0.4, 90, 9), 300);
     }
 
     form.addEventListener("submit", async (e) => {
@@ -335,9 +451,9 @@
         password: document.getElementById("password").value,
       };
 
-      // 드럼 돌리기 시작
       machine.classList.add("spinning");
-      const spinMs = 2600;
+      spinning = true;
+      const spinMs = 2800;
       const startedAt = Date.now();
 
       try {
@@ -346,34 +462,36 @@
           body: JSON.stringify(payload),
         });
 
-        // 최소 스핀 시간 보장
         const remain = Math.max(0, spinMs - (Date.now() - startedAt));
         await delay(remain);
         machine.classList.remove("spinning");
-        await delay(250);
+        spinning = false; // 공이 중력으로 가라앉음
+        await delay(500);
 
-        // 결과 영역 준비
         prizeLabel.textContent = data.draw.prize ? `🎁 경품: ${data.draw.prize}` : "";
         resultBox.classList.remove("hidden");
         resultBox.scrollIntoView({ behavior: "smooth", block: "center" });
 
-        // 당첨 공 순차 낙하
         for (let i = 0; i < data.winners.length; i++) {
           await dropWinner(data.winners[i], i);
         }
+        finaleConfetti();
 
         msg.className = "text-sm text-emerald-400";
         msg.textContent = `총 ${data.draw.total_candidates}명 중 ${data.winners.length}명 추첨 완료.`;
       } catch (err) {
         machine.classList.remove("spinning");
+        spinning = false;
         msg.className = "text-sm text-rose-400";
         msg.textContent = "⚠️ " + err.message;
       } finally {
         submit.disabled = false;
         submit.textContent = "🎲 추첨 시작";
-        loadPool(); // 후보 공 다시 채우기
+        loadPool();
       }
     });
+
+    loadPool();
   </script>
 </body>
 </html>
