@@ -3,53 +3,75 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>(function(){try{var d=document.documentElement,t=localStorage.getItem('gwp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');d.dataset.theme=t}catch(e){}})();</script>
   <title>당첨 결과 — AI 첫발, 함께 내딛다</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/theme.css" />
+  <script defer src="/js/site.js"></script>
+  <style>
+    .win-chip{
+      display:inline-flex;align-items:center;gap:6px;
+      background:var(--yl-bg-band);border:1px solid var(--yl-hairline);
+      border-radius:980px;padding:6px 14px;font-size:14px;font-weight:600;color:var(--yl-ink);
+    }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="yl-body">
   <div id="nav"></div>
 
-  <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold mb-2">🏆 당첨 결과</h1>
-    <p class="text-slate-500 mb-8">진행된 추첨의 당첨자 목록입니다.</p>
-
-    <div id="content" class="space-y-6">
-      <p class="text-slate-400">불러오는 중...</p>
-    </div>
+  <main class="yl-main">
+    <section class="yl-band yl-band--tight">
+      <div class="yl-wrap">
+        <div class="yl-sec-head" style="margin-bottom:32px">
+          <span class="yl-eyebrow">Winners</span>
+          <h1 class="yl-title">🏆 당첨 결과</h1>
+          <p class="yl-sub" style="margin-top:12px">진행된 추첨의 당첨자 목록입니다.</p>
+        </div>
+        <div id="content"><p class="yl-sub">불러오는 중...</p></div>
+      </div>
+    </section>
   </main>
+
+  <footer class="yl-footer">
+    <div class="yl-footer__legal">
+      <span>© 2026 GWP · AI 첫발, 함께 내딛다</span>
+      <span>Design by <a href="https://yonchelee.com" target="_blank" rel="noopener">yonchelee.com</a></span>
+    </div>
+  </footer>
 
   <script type="module">
     import { api, renderNav, ACTIVITIES, escapeHtml } from "/js/common.js";
     document.getElementById("nav").innerHTML = renderNav("/winners.html");
 
     const content = document.getElementById("content");
-    const scopeLabel = (s) =>
-      s === "all" ? "전체 등록자" : `${s}. ${ACTIVITIES[s]?.label ?? ""}`;
+    const scopeLabel = (s) => (s === "all" ? "전체 등록자" : `${s}. ${ACTIVITIES[s]?.label ?? ""}`);
 
     try {
       const { history } = await api("/api/winners");
       if (!history.length) {
-        content.innerHTML = `<p class="text-slate-400">아직 진행된 추첨이 없습니다.</p>`;
+        content.innerHTML = `<p class="yl-sub">아직 진행된 추첨이 없습니다.</p>`;
       } else {
         content.innerHTML = history
           .map((d) => `
-            <section class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-              <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-                <h2 class="font-bold text-lg">${d.prize ? "🎁 " + escapeHtml(d.prize) : "추첨"}</h2>
-                <span class="text-xs text-slate-400">${escapeHtml(d.drawn_at)} · ${escapeHtml(scopeLabel(String(d.scope)))}</span>
+            <div class="yl-card" style="display:block;margin-bottom:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+                <div class="name" style="font-size:17px">${d.prize ? "🎁 " + escapeHtml(d.prize) : "추첨"}</div>
+                <div class="desc" style="font-family:var(--yl-mono);font-size:11px">${escapeHtml(d.drawn_at)} · ${escapeHtml(scopeLabel(String(d.scope)))}</div>
               </div>
-              <div class="flex flex-wrap gap-2">
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
                 ${d.winners
-                  .map(
-                    (w) => `<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-3 py-1 text-sm font-medium">${ACTIVITIES[w.activity]?.emoji ?? "🎉"} ${escapeHtml(w.name)}</span>`
-                  )
+                  .map((w) => `<span class="win-chip">${ACTIVITIES[w.activity]?.emoji ?? "🎉"} ${escapeHtml(w.name)}</span>`)
                   .join("")}
               </div>
-            </section>`)
+            </div>`)
           .join("");
       }
     } catch (err) {
-      content.innerHTML = `<p class="text-rose-600">⚠️ ${escapeHtml(err.message)}</p>`;
+      content.innerHTML = `<p class="yl-msg err">⚠️ ${escapeHtml(err.message)}</p>`;
     }
   </script>
 </body>

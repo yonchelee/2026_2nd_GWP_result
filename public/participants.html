@@ -3,25 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>(function(){try{var d=document.documentElement,t=localStorage.getItem('gwp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');d.dataset.theme=t}catch(e){}})();</script>
   <title>등록 현황 — AI 첫발, 함께 내딛다</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/theme.css" />
+  <script defer src="/js/site.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="yl-body">
   <div id="nav"></div>
 
-  <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-12">
-    <div class="flex items-end justify-between mb-8 flex-wrap gap-3">
-      <div>
-        <h1 class="text-3xl font-bold">등록 현황</h1>
-        <p class="text-slate-500 mt-1">활동별 등록 결과물입니다. <span id="total" class="font-semibold text-indigo-600"></span></p>
-      </div>
-      <a href="/register.html" class="bg-indigo-600 text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition">+ 등록하기</a>
-    </div>
+  <main class="yl-main">
+    <section class="yl-band yl-band--tight">
+      <div class="yl-wrap--wide">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:40px">
+          <div>
+            <span class="yl-eyebrow">Participants</span>
+            <h1 class="yl-title">등록 현황</h1>
+            <p class="yl-sub" style="margin-top:10px">활동별 등록 결과물입니다. <span id="total" class="yl-count"></span></p>
+          </div>
+          <a href="/register.html" class="yl-btn">+ 등록하기</a>
+        </div>
 
-    <div id="content" class="space-y-10">
-      <p class="text-slate-400">불러오는 중...</p>
-    </div>
+        <div id="content"><p class="yl-sub">불러오는 중...</p></div>
+      </div>
+    </section>
   </main>
+
+  <footer class="yl-footer">
+    <div class="yl-footer__legal">
+      <span>© 2026 GWP · AI 첫발, 함께 내딛다</span>
+      <span>Design by <a href="https://yonchelee.com" target="_blank" rel="noopener">yonchelee.com</a></span>
+    </div>
+  </footer>
 
   <script type="module">
     import { api, renderNav, ACTIVITIES, escapeHtml } from "/js/common.js";
@@ -31,11 +48,14 @@
     const totalEl = document.getElementById("total");
 
     function card(r) {
+      const a = ACTIVITIES[r.activity];
       return `
-        <a href="${escapeHtml(r.url)}" target="_blank" rel="noopener"
-           class="block bg-white rounded-xl border border-slate-100 shadow-sm p-4 hover:shadow-md hover:border-indigo-200 transition">
-          <div class="font-semibold">${escapeHtml(r.name)}</div>
-          <div class="text-indigo-600 text-sm mt-1 truncate">${escapeHtml(r.url)}</div>
+        <a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="yl-card">
+          <span class="yl-ic ${a ? a.ic : ""}">${a ? a.emoji : "📦"}</span>
+          <div style="min-width:0">
+            <div class="name">${escapeHtml(r.name)}</div>
+            <div class="desc">${escapeHtml(r.url)}</div>
+          </div>
         </a>`;
     }
 
@@ -44,27 +64,29 @@
       totalEl.textContent = `총 ${registrations.length}건`;
 
       if (registrations.length === 0) {
-        content.innerHTML = `<p class="text-slate-400">아직 등록된 결과물이 없습니다. 첫 번째로 등록해 보세요!</p>`;
+        content.innerHTML = `<p class="yl-sub">아직 등록된 결과물이 없습니다. 첫 번째로 등록해 보세요!</p>`;
       } else {
-        const sections = Object.entries(ACTIVITIES).map(([id, a]) => {
-          const items = registrations.filter((r) => Number(r.activity) === Number(id));
-          return `
-            <section>
-              <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                <span>${a.emoji}</span> ${id}. ${a.label}
-                <span class="text-sm font-normal text-slate-400">(${items.length})</span>
-              </h2>
-              ${
-                items.length
-                  ? `<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">${items.map(card).join("")}</div>`
-                  : `<p class="text-slate-400 text-sm">아직 등록된 결과물이 없습니다.</p>`
-              }
-            </section>`;
-        });
-        content.innerHTML = sections.join("");
+        content.innerHTML = Object.entries(ACTIVITIES)
+          .map(([id, a]) => {
+            const items = registrations.filter((r) => Number(r.activity) === Number(id));
+            return `
+              <section style="margin-bottom:44px">
+                <h2 class="yl-headline" style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+                  <span class="yl-ic ${a.ic}">${a.emoji}</span>
+                  <span>${id}. ${a.label}</span>
+                  <span class="yl-count" style="font-weight:400">(${items.length})</span>
+                </h2>
+                ${
+                  items.length
+                    ? `<div class="yl-cards">${items.map(card).join("")}</div>`
+                    : `<p class="yl-sub">아직 등록된 결과물이 없습니다.</p>`
+                }
+              </section>`;
+          })
+          .join("");
       }
     } catch (err) {
-      content.innerHTML = `<p class="text-rose-600">⚠️ ${escapeHtml(err.message)}</p>`;
+      content.innerHTML = `<p class="yl-msg err">⚠️ ${escapeHtml(err.message)}</p>`;
     }
   </script>
 </body>

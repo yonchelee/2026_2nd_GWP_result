@@ -3,88 +3,111 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>(function(){try{var d=document.documentElement,t=localStorage.getItem('gwp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');d.dataset.theme=t}catch(e){}})();</script>
   <title>AI 첫발, 함께 내딛다 — 2분기 GWP 활동</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="2026년 2분기 GWP 활동 — AI를 활용한 3가지 활동에 참여하고 결과물을 등록하면 추첨으로 선물을 드립니다." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/theme.css" />
+  <script defer src="/js/site.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="yl-body">
   <div id="nav"></div>
 
-  <main class="flex-1">
+  <main class="yl-main">
     <!-- Hero -->
-    <section class="bg-gradient-to-br from-indigo-700 via-indigo-600 to-purple-600 text-white">
-      <div class="max-w-5xl mx-auto px-4 py-20 text-center">
-        <p class="text-indigo-200 font-medium mb-3">2026년 2분기 GWP 활동</p>
-        <h1 class="text-4xl sm:text-5xl font-extrabold mb-4">AI 첫발, 함께 내딛다</h1>
-        <p class="text-lg text-indigo-100 max-w-2xl mx-auto mb-8">
+    <section class="yl-band yl-band--hero">
+      <div class="yl-wrap--wide">
+        <span class="yl-eyebrow">2026 · 2분기 GWP 활동</span>
+        <h1 class="yl-display">AI 첫발,<br>함께 <span class="grad">내딛다</span>.</h1>
+        <p class="yl-lede" style="max-width:560px;margin-top:28px">
           AI를 활용한 세 가지 활동에 참여하고 결과물을 등록하세요.<br />
-          등록하신 모든 분들을 대상으로 추첨을 통해 선물을 드립니다 🎁
+          등록하신 모든 분들을 대상으로 추첨을 통해 선물을 드립니다.
         </p>
-        <div class="flex flex-wrap gap-3 justify-center">
-          <a href="/register.html" class="bg-white text-indigo-700 font-semibold px-6 py-3 rounded-xl shadow hover:bg-indigo-50 transition">결과물 등록하기</a>
-          <a href="/participants.html" class="bg-indigo-500/40 border border-white/40 text-white font-semibold px-6 py-3 rounded-xl hover:bg-indigo-500/60 transition">등록 현황 보기</a>
+        <div style="margin-top:44px;display:flex;gap:14px;flex-wrap:wrap">
+          <a href="/register.html" class="yl-btn">결과물 등록하기</a>
+          <a href="/participants.html" class="yl-btn yl-btn--ghost">등록 현황 보기</a>
         </div>
       </div>
     </section>
 
     <!-- Activities -->
-    <section class="max-w-5xl mx-auto px-4 py-16">
-      <h2 class="text-2xl font-bold text-center mb-2">3가지 활동</h2>
-      <p class="text-center text-slate-500 mb-10">원하는 활동에 자유롭게 참여하세요. 활동별로 각각 등록할 수 있어요.</p>
-      <div class="grid sm:grid-cols-3 gap-6">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-          <div class="text-4xl mb-3">🐍</div>
-          <h3 class="font-bold text-lg mb-2">1. AI로 파이썬 프로그램 개발</h3>
-          <p class="text-slate-500 text-sm">AI의 도움을 받아 나만의 파이썬 프로그램을 만들어 보세요.</p>
+    <section class="yl-band yl-band--soft">
+      <div class="yl-wrap--wide">
+        <div class="yl-sec-head yl-sec-head--center sr">
+          <span class="yl-eyebrow">Activities</span>
+          <h2 class="yl-title">3가지 활동</h2>
+          <p class="yl-sub" style="margin-top:12px">원하는 활동에 자유롭게 참여하세요. 활동별로 각각 등록할 수 있어요.</p>
         </div>
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-          <div class="text-4xl mb-3">🌐</div>
-          <h3 class="font-bold text-lg mb-2">2. 웹페이지 개발 & GitHub 등록</h3>
-          <p class="text-slate-500 text-sm">웹페이지를 만들어 GitHub에 올리고 주소를 공유하세요.</p>
+        <div class="yl-tiles">
+          <div class="yl-tile sr">
+            <span class="yl-ic ic-orange">🐍</span>
+            <h3>1. 파이썬 개발</h3>
+            <p>AI의 도움을 받아 나만의 파이썬 프로그램을 만들어 보세요.</p>
+          </div>
+          <div class="yl-tile sr sr-d1">
+            <span class="yl-ic ic-pink">🌐</span>
+            <h3>2. 웹페이지 · GitHub</h3>
+            <p>웹페이지를 만들어 GitHub에 올리고 주소를 공유하세요.</p>
+          </div>
+          <div class="yl-tile sr sr-d2">
+            <span class="yl-ic ic-purple">🤖</span>
+            <h3>3. AI 어시스턴트</h3>
+            <p>나만의 AI 어시스턴트를 만들어 보고 결과를 등록하세요.</p>
+          </div>
         </div>
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-          <div class="text-4xl mb-3">🤖</div>
-          <h3 class="font-bold text-lg mb-2">3. AI 어시스턴트 만들기</h3>
-          <p class="text-slate-500 text-sm">나만의 AI 어시스턴트를 만들어 보고 결과를 등록하세요.</p>
-        </div>
-      </div>
-      <div class="text-center mt-10">
-        <a href="/register.html" class="inline-block bg-indigo-600 text-white font-semibold px-8 py-3 rounded-xl shadow hover:bg-indigo-700 transition">지금 등록하기 →</a>
+        <p style="margin-top:36px;text-align:center" class="sr">
+          <a href="/register.html" class="yl-btn yl-btn--accent">지금 등록하기</a>
+        </p>
       </div>
     </section>
 
-    <!-- 경품 추첨 바로가기 -->
-    <section class="bg-slate-900 text-white">
-      <div class="max-w-5xl mx-auto px-4 py-16">
-        <h2 class="text-2xl font-bold text-center mb-2">🎁 경품 추첨 게임</h2>
-        <p class="text-center text-slate-400 mb-10">항목을 선택하면 해당 활동 등록자로 바로 추첨할 수 있어요. <span class="text-slate-500">(관리자 비밀번호 필요)</span></p>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <a href="/draw.html?scope=all" class="group bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-6 text-center shadow-lg hover:scale-[1.03] transition">
-            <div class="text-4xl mb-2">🎰</div>
-            <div class="font-bold">전체 추첨</div>
-            <div class="text-amber-100 text-xs mt-1">모든 등록자 대상</div>
+    <!-- 경품 추첨 게임 바로가기 -->
+    <section class="yl-band">
+      <div class="yl-wrap--wide">
+        <div class="yl-sec-head sr">
+          <span class="yl-eyebrow">Prize Draw</span>
+          <h2 class="yl-title">🎁 경품 추첨 게임</h2>
+          <p class="yl-sub" style="margin-top:12px">항목을 선택하면 해당 활동 등록자로 바로 추첨할 수 있어요. <span style="opacity:.7">(관리자 비밀번호 필요)</span></p>
+        </div>
+        <div class="yl-tiles">
+          <a href="/draw.html?scope=all" class="yl-tile yl-tile--dark sr">
+            <span class="yl-ic" style="--yl-ic-bg:rgba(255,255,255,.1);--yl-ic-c:#fff">🎰</span>
+            <h3>전체 추첨</h3>
+            <p>모든 등록자를 대상으로 추첨</p>
+            <span class="yl-arrow">추첨하러 가기</span>
           </a>
-          <a href="/draw.html?scope=1" class="group bg-slate-800 border border-slate-700 rounded-2xl p-6 text-center shadow-lg hover:border-indigo-400 hover:scale-[1.03] transition">
-            <div class="text-4xl mb-2">🐍</div>
-            <div class="font-bold">활동 1 추첨</div>
-            <div class="text-slate-400 text-xs mt-1">파이썬 프로그램 개발</div>
+          <a href="/draw.html?scope=1" class="yl-tile sr sr-d1">
+            <span class="yl-ic ic-orange">🐍</span>
+            <h3>활동 1 추첨</h3>
+            <p>파이썬 프로그램 개발</p>
+            <span class="yl-arrow">추첨하러 가기</span>
           </a>
-          <a href="/draw.html?scope=2" class="group bg-slate-800 border border-slate-700 rounded-2xl p-6 text-center shadow-lg hover:border-emerald-400 hover:scale-[1.03] transition">
-            <div class="text-4xl mb-2">🌐</div>
-            <div class="font-bold">활동 2 추첨</div>
-            <div class="text-slate-400 text-xs mt-1">웹페이지 & GitHub</div>
+          <a href="/draw.html?scope=2" class="yl-tile sr sr-d2">
+            <span class="yl-ic ic-pink">🌐</span>
+            <h3>활동 2 추첨</h3>
+            <p>웹페이지 · GitHub 등록</p>
+            <span class="yl-arrow">추첨하러 가기</span>
           </a>
-          <a href="/draw.html?scope=3" class="group bg-slate-800 border border-slate-700 rounded-2xl p-6 text-center shadow-lg hover:border-rose-400 hover:scale-[1.03] transition">
-            <div class="text-4xl mb-2">🤖</div>
-            <div class="font-bold">활동 3 추첨</div>
-            <div class="text-slate-400 text-xs mt-1">AI 어시스턴트 만들기</div>
+          <a href="/draw.html?scope=3" class="yl-tile sr sr-d3">
+            <span class="yl-ic ic-purple">🤖</span>
+            <h3>활동 3 추첨</h3>
+            <p>AI 어시스턴트 만들기</p>
+            <span class="yl-arrow">추첨하러 가기</span>
           </a>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="text-center text-slate-400 text-sm py-8">
-    2026 2분기 GWP 활동 · AI 첫발, 함께 내딛다
+  <footer class="yl-footer">
+    <div class="yl-footer__legal">
+      <span>© 2026 GWP · AI 첫발, 함께 내딛다</span>
+      <span>Design by <a href="https://yonchelee.com" target="_blank" rel="noopener">yonchelee.com</a></span>
+    </div>
   </footer>
 
   <script type="module">

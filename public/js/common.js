@@ -1,9 +1,9 @@
-// 공통 프론트엔드 헬퍼
+// 공통 프론트엔드 헬퍼 (yonchelee.com 디자인 시스템)
 
 export const ACTIVITIES = {
-  1: { label: "AI로 파이썬 프로그램 개발하기", emoji: "🐍", color: "indigo" },
-  2: { label: "웹페이지 개발해서 GitHub 등록하기", emoji: "🌐", color: "emerald" },
-  3: { label: "AI로 어시스턴트 만들기", emoji: "🤖", color: "rose" },
+  1: { label: "AI로 파이썬 프로그램 개발하기", emoji: "🐍", ic: "ic-orange" },
+  2: { label: "웹페이지 개발해서 GitHub 등록하기", emoji: "🌐", ic: "ic-pink" },
+  3: { label: "AI로 어시스턴트 만들기", emoji: "🤖", ic: "ic-purple" },
 };
 
 export async function api(path, options = {}) {
@@ -32,30 +32,25 @@ export function escapeHtml(str) {
   );
 }
 
-// 상단 네비게이션을 페이지마다 동일하게 주입
+// 프로스티드 글라스 내비게이션 (yl-nav)
 export function renderNav(active) {
   const items = [
-    { href: "/", label: "홈" },
-    { href: "/register.html", label: "결과 등록" },
-    { href: "/participants.html", label: "등록 현황" },
-    { href: "/winners.html", label: "당첨 결과" },
+    ["/", "홈"],
+    ["/register.html", "결과 등록"],
+    ["/participants.html", "등록 현황"],
+    ["/draw.html", "추첨"],
+    ["/winners.html", "당첨 결과"],
   ];
   const links = items
-    .map((it) => {
-      const isActive = it.href === active;
-      const cls = isActive
-        ? "text-white font-semibold"
-        : "text-indigo-200 hover:text-white";
-      return `<a href="${it.href}" class="${cls} transition">${it.label}</a>`;
-    })
+    .map(([href, label]) => `<a href="${href}" class="${href === active ? "on" : ""}">${label}</a>`)
     .join("");
   return `
-  <header class="bg-indigo-700/90 backdrop-blur sticky top-0 z-20 shadow-lg">
-    <nav class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="/" class="text-white font-bold text-lg flex items-center gap-2">
-        <span>🚀</span><span>AI 첫발, 함께 내딛다</span>
-      </a>
-      <div class="flex gap-5 text-sm">${links}</div>
-    </nav>
-  </header>`;
+  <nav class="yl-nav">
+    <a href="/" class="logo">GWP.</a>
+    ${links}
+    <span class="yl-nav__spacer"></span>
+    <div class="yl-nav__ctrl">
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="테마 전환"><span class="tt-moon">🌙</span><span class="tt-sun">☀️</span></button>
+    </div>
+  </nav>`;
 }
