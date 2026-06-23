@@ -63,5 +63,26 @@ export async function onRequestPost(context) {
     return json({ ok: true });
   }
 
+  // 추첨/당첨 기록만 초기화 (등록 자료는 유지)
+  if (action === "reset-draws") {
+    await env.DB.batch([
+      env.DB.prepare("DELETE FROM winners"),
+      env.DB.prepare("DELETE FROM draws"),
+      env.DB.prepare("DELETE FROM sqlite_sequence WHERE name IN ('draws','winners')"),
+    ]);
+    return json({ ok: true });
+  }
+
+  // 전체 초기화 (등록 + 추첨 + 당첨 모두 삭제)
+  if (action === "reset-all") {
+    await env.DB.batch([
+      env.DB.prepare("DELETE FROM winners"),
+      env.DB.prepare("DELETE FROM draws"),
+      env.DB.prepare("DELETE FROM registrations"),
+      env.DB.prepare("DELETE FROM sqlite_sequence WHERE name IN ('registrations','draws','winners')"),
+    ]);
+    return json({ ok: true });
+  }
+
   return badRequest("알 수 없는 action 입니다.");
 }

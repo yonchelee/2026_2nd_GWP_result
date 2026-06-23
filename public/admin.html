@@ -34,6 +34,13 @@
       .adm-row .id{grid-column:1 / -1}
       .adm-actions{grid-column:1 / -1;justify-content:flex-end}
     }
+    .danger-zone{
+      margin-top:36px;padding:20px;border:1px solid rgba(238,9,121,.3);
+      border-radius:var(--yl-r-sm);background:rgba(238,9,121,.05);
+    }
+    .danger-zone h3{font-size:15px;font-weight:700;color:var(--yl-accent-solid);margin-bottom:6px}
+    .danger-zone p{font-size:13px;color:var(--yl-ink-3);margin-bottom:14px}
+    .dz-actions{display:flex;gap:10px;flex-wrap:wrap}
   </style>
 </head>
 <body class="yl-body">
@@ -66,6 +73,15 @@
           </div>
           <div id="list"></div>
           <div id="listMsg" class="yl-msg"></div>
+
+          <div class="danger-zone">
+            <h3>⚠️ 데이터 초기화</h3>
+            <p>이벤트 시작 전 데이터를 비울 수 있습니다. 되돌릴 수 없으니 주의하세요.</p>
+            <div class="dz-actions">
+              <button id="resetDraws" class="btn-sm btn-del">추첨 기록만 초기화</button>
+              <button id="resetAll" class="btn-sm btn-del">전체 초기화 (등록+추첨)</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -195,6 +211,35 @@
       }
     });
     pwInput.addEventListener("keydown", (e) => { if (e.key === "Enter") authBtn.click(); });
+
+    document.getElementById("resetDraws").addEventListener("click", async (e) => {
+      if (!confirm("추첨·당첨 기록을 모두 삭제할까요?\n등록 자료는 그대로 유지됩니다. 되돌릴 수 없습니다.")) return;
+      e.target.disabled = true;
+      try {
+        await adminCall({ action: "reset-draws" });
+        flash("추첨 기록을 초기화했습니다.", true);
+        await loadList();
+      } catch (err) {
+        flash("⚠️ " + err.message, false);
+      } finally {
+        e.target.disabled = false;
+      }
+    });
+
+    document.getElementById("resetAll").addEventListener("click", async (e) => {
+      if (!confirm("⚠️ 등록 자료까지 모든 데이터를 삭제합니다.\n되돌릴 수 없습니다. 계속할까요?")) return;
+      if (!confirm("정말로 전체 초기화할까요? 마지막 확인입니다.")) return;
+      e.target.disabled = true;
+      try {
+        await adminCall({ action: "reset-all" });
+        flash("전체 데이터를 초기화했습니다.", true);
+        await loadList();
+      } catch (err) {
+        flash("⚠️ " + err.message, false);
+      } finally {
+        e.target.disabled = false;
+      }
+    });
 
     logoutBtn.addEventListener("click", () => {
       sessionStorage.removeItem(PW_KEY);
