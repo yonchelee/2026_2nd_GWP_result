@@ -32,23 +32,29 @@ export async function onRequestPost(context) {
     if (!Number.isInteger(id)) return badRequest("잘못된 id 입니다.");
 
     const activity = parseActivity(body.activity);
-    if (!activity) return badRequest("활동을 선택해 주세요. (1, 2, 3 중 하나)");
+    if (!activity) return badRequest("활동을 선택해 주세요.");
 
     const name = typeof body.name === "string" ? body.name.trim() : "";
     if (!name) return badRequest("이름을 입력해 주세요.");
     if (name.length > 50) return badRequest("이름은 50자 이하로 입력해 주세요.");
 
-    const url = typeof body.url === "string" ? body.url.trim() : "";
-    if (!isValidUrl(url)) return badRequest("올바른 웹주소(http:// 또는 https://)를 입력해 주세요.");
+    // 활동 1~3: 웹주소 / 활동 4(소감): 텍스트
+    const value = typeof body.url === "string" ? body.url.trim() : "";
+    if (activity === 4) {
+      if (!value) return badRequest("소감을 입력해 주세요.");
+      if (value.length > 1000) return badRequest("소감은 1000자 이하로 입력해 주세요.");
+    } else {
+      if (!isValidUrl(value)) return badRequest("올바른 웹주소(http:// 또는 https://)를 입력해 주세요.");
+    }
 
     const res = await env.DB.prepare(
       "UPDATE registrations SET activity = ?, name = ?, url = ? WHERE id = ?"
     )
-      .bind(activity, name, url, id)
+      .bind(activity, name, value, id)
       .run();
     if ((res.meta?.changes ?? 0) === 0) return badRequest("해당 등록을 찾을 수 없습니다.");
 
-    return json({ ok: true, registration: { id, activity, name, url } });
+    return json({ ok: true, registration: { id, activity, name, url: value } });
   }
 
   // 등록 삭제 (관련 당첨 기록도 함께 제거)

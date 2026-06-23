@@ -49,6 +49,17 @@
 
     function card(r) {
       const a = ACTIVITIES[r.activity];
+      // 소감(활동 4)은 링크가 아니라 텍스트 카드로 표시
+      if (Number(r.activity) === 4) {
+        return `
+          <div class="yl-card" style="cursor:default">
+            <span class="yl-ic ${a ? a.ic : ""}">${a ? a.emoji : "💬"}</span>
+            <div style="min-width:0">
+              <div class="name">${escapeHtml(r.name)}</div>
+              <div class="desc" style="word-break:normal;white-space:pre-wrap">${escapeHtml(r.url)}</div>
+            </div>
+          </div>`;
+      }
       return `
         <a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="yl-card">
           <span class="yl-ic ${a ? a.ic : ""}">${a ? a.emoji : "📦"}</span>

@@ -15,10 +15,10 @@ export function unauthorized(message = "인증에 실패했습니다.") {
   return json({ ok: false, error: message }, 401);
 }
 
-// 활동 번호 검증 (1 | 2 | 3)
+// 활동 번호 검증 (1 | 2 | 3 | 4)
 export function parseActivity(value) {
   const n = Number(value);
-  return [1, 2, 3].includes(n) ? n : null;
+  return [1, 2, 3, 4].includes(n) ? n : null;
 }
 
 // 간단한 URL 형식 검증
@@ -48,4 +48,5 @@ export const ACTIVITY_LABELS = {
   1: "AI로 파이썬 프로그램 개발하기",
   2: "웹페이지 개발해서 GitHub 등록하기",
   3: "AI로 어시스턴트 만들기",
+  4: "GWP 소감",
 };

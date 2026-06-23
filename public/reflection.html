@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script>(function(){try{var d=document.documentElement,t=localStorage.getItem('gwp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');d.dataset.theme=t}catch(e){}})();</script>
-  <title>결과물 등록 — AI 첫발, 함께 내딛다</title>
+  <title>GWP 소감 등록 — AI 첫발, 함께 내딛다</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
@@ -12,6 +12,9 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/theme.css" />
   <script defer src="/js/site.js"></script>
+  <style>
+    textarea.yl-input{min-height:140px;resize:vertical;line-height:1.6;font-family:inherit}
+  </style>
 </head>
 <body class="yl-body">
   <div id="nav"></div>
@@ -20,29 +23,24 @@
     <section class="yl-band yl-band--tight">
       <div class="yl-wrap">
         <div class="yl-sec-head" style="margin-bottom:32px">
-          <span class="yl-eyebrow">Register</span>
-          <h1 class="yl-title">결과물 등록</h1>
-          <p class="yl-sub" style="margin-top:12px">참여한 활동을 선택하고 이름과 웹주소를 등록해 주세요. 활동별로 각각 등록할 수 있어요.</p>
+          <span class="yl-eyebrow">Reflection</span>
+          <h1 class="yl-title">💬 GWP 소감 등록</h1>
+          <p class="yl-sub" style="margin-top:12px">이번 GWP 활동에 참여한 소감을 남겨주세요. 소감을 남긴 분들도 추첨 대상에 포함됩니다.</p>
         </div>
 
         <form id="form" class="yl-form">
-          <div class="yl-field">
-            <label>참여한 활동</label>
-            <div id="activities"></div>
-          </div>
-
           <div class="yl-field">
             <label for="name">이름</label>
             <input id="name" name="name" type="text" maxlength="50" required class="yl-input" placeholder="홍길동" />
           </div>
 
           <div class="yl-field">
-            <label for="url">결과물 웹주소</label>
-            <input id="url" name="url" type="url" required class="yl-input" placeholder="https://github.com/..." />
-            <p class="yl-sub" style="margin-top:6px;font-size:12px">http:// 또는 https:// 로 시작하는 주소를 입력하세요.</p>
+            <label for="content">소감</label>
+            <textarea id="content" name="content" maxlength="1000" required class="yl-input" placeholder="이번 활동을 하면서 느낀 점을 자유롭게 적어주세요. (최대 1000자)"></textarea>
+            <p class="yl-sub" style="margin-top:6px;font-size:12px"><span id="charCount">0</span> / 1000자</p>
           </div>
 
-          <button type="submit" id="submit" class="yl-btn yl-btn--accent yl-btn--full">등록하기</button>
+          <button type="submit" id="submit" class="yl-btn yl-btn--accent yl-btn--full">소감 등록하기</button>
           <div id="message" class="yl-msg"></div>
         </form>
 
@@ -61,23 +59,16 @@
   </footer>
 
   <script type="module">
-    import { api, renderNav, ACTIVITIES } from "/js/common.js";
-    document.getElementById("nav").innerHTML = renderNav("/register.html");
-
-    const actBox = document.getElementById("activities");
-    actBox.innerHTML = Object.entries(ACTIVITIES)
-      .filter(([id]) => id !== "4") // 소감(4)은 별도 페이지에서 등록
-      .map(([id, a]) => `
-        <label class="yl-radio">
-          <input type="radio" name="activity" value="${id}" ${id === "1" ? "checked" : ""} />
-          <span class="yl-ic ${a.ic}" style="width:30px;height:30px;font-size:16px">${a.emoji}</span>
-          <span class="t">${id}. ${a.label}</span>
-        </label>`)
-      .join("");
+    import { api, renderNav } from "/js/common.js";
+    document.getElementById("nav").innerHTML = renderNav("/reflection.html");
 
     const form = document.getElementById("form");
     const msg = document.getElementById("message");
     const submit = document.getElementById("submit");
+    const content = document.getElementById("content");
+    const charCount = document.getElementById("charCount");
+
+    content.addEventListener("input", () => { charCount.textContent = content.value.length; });
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -86,25 +77,26 @@
       submit.disabled = true;
       submit.textContent = "등록 중...";
 
-      const activity = Number(form.activity.value);
       const name = form.name.value.trim();
-      const url = form.url.value.trim();
+      const text = content.value.trim();
 
       try {
+        // 소감은 활동 4번, 값은 url 필드에 담아 전송 (서버가 텍스트로 검증)
         await api("/api/register", {
           method: "POST",
-          body: JSON.stringify({ activity, name, url }),
+          body: JSON.stringify({ activity: 4, name, url: text }),
         });
         msg.className = "yl-msg ok";
-        msg.textContent = "✅ 등록이 완료되었습니다! 다른 활동도 등록할 수 있어요.";
+        msg.textContent = "✅ 소감이 등록되었습니다. 감사합니다!";
         form.name.value = "";
-        form.url.value = "";
+        content.value = "";
+        charCount.textContent = "0";
       } catch (err) {
         msg.className = "yl-msg err";
         msg.textContent = "⚠️ " + err.message;
       } finally {
         submit.disabled = false;
-        submit.textContent = "등록하기";
+        submit.textContent = "소감 등록하기";
       }
     });
   </script>

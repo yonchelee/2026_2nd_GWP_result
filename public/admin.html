@@ -126,7 +126,7 @@
           <div class="id">#${r.id}</div>
           <select class="yl-input f-activity">${activityOptions(r.activity)}</select>
           <input class="yl-input f-name" type="text" maxlength="50" value="${escapeHtml(r.name)}" placeholder="이름" />
-          <input class="yl-input f-url" type="url" value="${escapeHtml(r.url)}" placeholder="https://..." style="grid-column:2 / 4" />
+          <input class="yl-input f-url" type="text" value="${escapeHtml(r.url)}" placeholder="웹주소 또는 소감" style="grid-column:2 / 4" />
           <div class="adm-actions">
             <button class="btn-sm btn-save">저장</button>
             <button class="btn-sm btn-del">삭제</button>

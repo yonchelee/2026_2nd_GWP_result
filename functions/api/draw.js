@@ -21,7 +21,7 @@ export async function onRequestPost(context) {
 
   // 추첨 범위: 'all' | '1' | '2' | '3'
   const scope = String(body.scope ?? "all");
-  if (!["all", "1", "2", "3"].includes(scope)) {
+  if (!["all", "1", "2", "3", "4"].includes(scope)) {
     return badRequest("추첨 범위가 올바르지 않습니다.");
   }
 

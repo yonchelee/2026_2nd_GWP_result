@@ -4,6 +4,7 @@ export const ACTIVITIES = {
   1: { label: "AI로 파이썬 프로그램 개발하기", emoji: "🐍", ic: "ic-orange" },
   2: { label: "웹페이지 개발해서 GitHub 등록하기", emoji: "🌐", ic: "ic-pink" },
   3: { label: "AI로 어시스턴트 만들기", emoji: "🤖", ic: "ic-purple" },
+  4: { label: "GWP 소감", emoji: "💬", ic: "ic-indigo" },
 };
 
 export async function api(path, options = {}) {
@@ -37,6 +38,7 @@ export function renderNav(active) {
   const items = [
     ["/", "홈"],
     ["/register.html", "결과 등록"],
+    ["/reflection.html", "소감 등록"],
     ["/participants.html", "등록 현황"],
     ["/draw.html", "추첨"],
     ["/winners.html", "당첨 결과"],
