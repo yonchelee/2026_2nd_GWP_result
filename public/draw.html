@@ -108,6 +108,30 @@
     }
     #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 70; }
     #prizeLabel { color: var(--yl-accent-solid); font-weight: 600; }
+
+    /* 2단 레이아웃: 왼쪽 추첨기 / 오른쪽 추첨 기록 */
+    .draw-layout{display:grid;grid-template-columns:1fr 300px;gap:32px;align-items:start;max-width:1024px;margin:0 auto}
+    .records{
+      position:sticky;top:64px;text-align:left;
+      background:var(--yl-bg-elev);border:1px solid var(--yl-hairline-soft);
+      border-radius:var(--yl-r);padding:20px;max-height:82vh;overflow:auto;box-shadow:var(--yl-shadow);
+    }
+    .records h2{font-size:17px;font-weight:700;letter-spacing:-.2px;margin-bottom:14px}
+    .rec-item{padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--yl-hairline-soft)}
+    .rec-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+    .rec-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:7px}
+    .rec-head .pz{font-weight:600;font-size:13px;color:var(--yl-ink)}
+    .rec-head .sc{font-family:var(--yl-mono);font-size:10px;color:var(--yl-ink-4);white-space:nowrap}
+    .rec-chip{
+      display:inline-flex;align-items:center;gap:5px;
+      background:var(--yl-bg-band);border:1px solid var(--yl-hairline);
+      border-radius:980px;padding:4px 10px;font-size:12.5px;font-weight:600;color:var(--yl-ink);
+    }
+    .rec-time{font-family:var(--yl-mono);font-size:10px;color:var(--yl-ink-4);margin-top:7px}
+    @media(max-width:860px){
+      .draw-layout{grid-template-columns:1fr}
+      .records{position:static;max-height:none}
+    }
   </style>
 </head>
 <body class="yl-body">
@@ -154,21 +178,32 @@
     </section>
 
     <section class="yl-band yl-band--soft yl-band--tight" style="padding-top:40px">
-      <div class="yl-wrap--wide" style="text-align:center">
-        <div id="poolInfo" class="yl-sub" style="margin-bottom:24px"></div>
-        <div class="machine" id="machine">
-          <div class="drum-frame">
-            <div class="drum"><div class="balls" id="balls"></div></div>
-          </div>
-          <div class="chute"></div>
-          <div class="base"><span class="crank"></span></div>
-          <div id="exit" style="position:absolute; left:50%; bottom:40px; width:1px; height:1px;"></div>
-        </div>
+      <div class="yl-wrap--wide">
+        <div class="draw-layout">
+          <!-- 왼쪽: 추첨기 + 현재 추첨 결과 -->
+          <div style="text-align:center">
+            <div id="poolInfo" class="yl-sub" style="margin-bottom:24px"></div>
+            <div class="machine" id="machine">
+              <div class="drum-frame">
+                <div class="drum"><div class="balls" id="balls"></div></div>
+              </div>
+              <div class="chute"></div>
+              <div class="base"><span class="crank"></span></div>
+              <div id="exit" style="position:absolute; left:50%; bottom:40px; width:1px; height:1px;"></div>
+            </div>
 
-        <div id="result" class="sr" style="margin-top:48px;opacity:1;transform:none;display:none">
-          <h2 class="yl-headline" style="margin-bottom:6px">🎉 당첨자 🎉</h2>
-          <div id="prizeLabel" style="margin-bottom:24px"></div>
-          <div id="tray" class="tray"></div>
+            <div id="result" style="margin-top:48px;display:none">
+              <h2 class="yl-headline" style="margin-bottom:6px">🎉 당첨자 🎉</h2>
+              <div id="prizeLabel" style="margin-bottom:24px"></div>
+              <div id="tray" class="tray"></div>
+            </div>
+          </div>
+
+          <!-- 오른쪽: 누적 추첨 기록 -->
+          <aside class="records">
+            <h2>🏆 추첨 기록</h2>
+            <div id="records"><p class="yl-sub">불러오는 중...</p></div>
+          </aside>
         </div>
       </div>
     </section>
@@ -201,8 +236,36 @@
     const tray = document.getElementById("tray");
     const prizeLabel = document.getElementById("prizeLabel");
     const scopeSel = document.getElementById("scope");
+    const recordsBox = document.getElementById("records");
 
     const shortName = (n) => (n.length > 5 ? n.slice(0, 4) + "…" : n);
+    const scopeShort = (s) => (s === "all" ? "전체" : `활동 ${s}`);
+
+    // 오른쪽 누적 추첨 기록 (서버 /api/winners 기준, 새로고침해도 유지)
+    async function loadRecords() {
+      try {
+        const { history } = await api("/api/winners");
+        if (!history.length) {
+          recordsBox.innerHTML = `<p class="yl-sub">아직 추첨 기록이 없습니다.</p>`;
+          return;
+        }
+        recordsBox.innerHTML = history
+          .map((d) => `
+            <div class="rec-item">
+              <div class="rec-head">
+                <span class="pz">${d.prize ? "🎁 " + escapeHtml(d.prize) : "추첨"}</span>
+                <span class="sc">${escapeHtml(scopeShort(String(d.scope)))}</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                ${d.winners.map((w) => `<span class="rec-chip">${ACTIVITIES[w.activity]?.emoji ?? "🎉"} ${escapeHtml(w.name)}</span>`).join("")}
+              </div>
+              <div class="rec-time">${escapeHtml(d.drawn_at)}</div>
+            </div>`)
+          .join("");
+      } catch (err) {
+        recordsBox.innerHTML = `<p class="yl-msg err">⚠️ ${escapeHtml(err.message)}</p>`;
+      }
+    }
 
     // 이미 당첨된(추첨함에서 빠진) 등록자 id 집합 — 풀에서 영구 제외
     let drawnIds = new Set();
@@ -502,10 +565,11 @@
         submit.disabled = false;
         submit.textContent = "🎲 추첨 시작";
         loadPool();
+        loadRecords(); // 오른쪽 기록 갱신
       }
     });
 
-    (async () => { await loadDrawnIds(); loadPool(); })();
+    (async () => { await loadDrawnIds(); loadPool(); loadRecords(); })();
   </script>
 </body>
 </html>
