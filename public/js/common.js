@@ -40,6 +40,7 @@ export function renderNav(active) {
     ["/participants.html", "등록 현황"],
     ["/draw.html", "추첨"],
     ["/winners.html", "당첨 결과"],
+    ["/admin.html", "관리"],
   ];
   const links = items
     .map(([href, label]) => `<a href="${href}" class="${href === active ? "on" : ""}">${label}</a>`)

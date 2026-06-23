@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>(function(){try{var d=document.documentElement,t=localStorage.getItem('gwp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');d.dataset.theme=t}catch(e){}})();</script>
+  <title>등록 자료 관리 — AI 첫발, 함께 내딛다</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/theme.css" />
+  <script defer src="/js/site.js"></script>
+  <style>
+    .adm-row{
+      background:var(--yl-bg-elev);border:1px solid var(--yl-hairline-soft);
+      border-radius:var(--yl-r-sm);padding:16px;margin-bottom:12px;
+      display:grid;grid-template-columns:120px 1fr 1fr auto;gap:12px;align-items:center;
+    }
+    .adm-row .id{font-family:var(--yl-mono);font-size:11px;color:var(--yl-ink-4)}
+    .adm-actions{display:flex;gap:8px}
+    .btn-sm{
+      padding:8px 14px;border-radius:980px;border:1px solid var(--yl-hairline);
+      background:transparent;color:var(--yl-ink);font-family:inherit;font-size:13px;font-weight:600;
+      cursor:pointer;transition:all var(--yl-t);white-space:nowrap;
+    }
+    .btn-sm:hover{border-color:var(--yl-ink-3)}
+    .btn-save{background:var(--yl-ink);color:var(--yl-bg);border-color:var(--yl-ink)}
+    .btn-del{color:var(--yl-accent-solid);border-color:rgba(238,9,121,.4)}
+    .btn-del:hover{background:rgba(238,9,121,.08);border-color:var(--yl-accent-solid)}
+    @media(max-width:760px){
+      .adm-row{grid-template-columns:1fr 1fr;}
+      .adm-row .id{grid-column:1 / -1}
+      .adm-actions{grid-column:1 / -1;justify-content:flex-end}
+    }
+  </style>
+</head>
+<body class="yl-body">
+  <div id="nav"></div>
+
+  <main class="yl-main">
+    <section class="yl-band yl-band--tight">
+      <div class="yl-wrap--wide">
+        <div class="yl-sec-head" style="margin-bottom:28px">
+          <span class="yl-eyebrow">Admin</span>
+          <h1 class="yl-title">🛠️ 등록 자료 관리</h1>
+          <p class="yl-sub" style="margin-top:12px">등록된 결과물을 수정하거나 삭제할 수 있습니다. <span style="opacity:.7">(관리자 전용)</span></p>
+        </div>
+
+        <!-- 인증 게이트 -->
+        <div id="gate" class="yl-form">
+          <div class="yl-field">
+            <label for="pw">관리자 비밀번호</label>
+            <input id="pw" type="password" class="yl-input" placeholder="비밀번호 입력" />
+          </div>
+          <button id="authBtn" class="yl-btn yl-btn--accent yl-btn--full">인증하기</button>
+          <div id="gateMsg" class="yl-msg"></div>
+        </div>
+
+        <!-- 관리 패널 -->
+        <div id="panel" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+            <p class="yl-sub" id="count"></p>
+            <button id="logoutBtn" class="btn-sm">로그아웃</button>
+          </div>
+          <div id="list"></div>
+          <div id="listMsg" class="yl-msg"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="yl-footer">
+    <div class="yl-footer__legal">
+      <span>© 2026 GWP · AI 첫발, 함께 내딛다</span>
+      <span>Design by <a href="https://yonchelee.com" target="_blank" rel="noopener">yonchelee.com</a></span>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { api, renderNav, ACTIVITIES, escapeHtml } from "/js/common.js";
+    document.getElementById("nav").innerHTML = renderNav("/admin.html");
+
+    const PW_KEY = "gwp-admin-pw";
+    let pw = sessionStorage.getItem(PW_KEY) || "";
+
+    const gate = document.getElementById("gate");
+    const gateMsg = document.getElementById("gateMsg");
+    const pwInput = document.getElementById("pw");
+    const authBtn = document.getElementById("authBtn");
+    const panel = document.getElementById("panel");
+    const list = document.getElementById("list");
+    const listMsg = document.getElementById("listMsg");
+    const countEl = document.getElementById("count");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const adminCall = (payload) =>
+      api("/api/admin", { method: "POST", body: JSON.stringify({ ...payload, password: pw }) });
+
+    function activityOptions(sel) {
+      return Object.entries(ACTIVITIES)
+        .map(([id, a]) => `<option value="${id}" ${Number(sel) === Number(id) ? "selected" : ""}>${id}. ${a.label}</option>`)
+        .join("");
+    }
+
+    function rowHtml(r) {
+      return `
+        <div class="adm-row" data-id="${r.id}">
+          <div class="id">#${r.id}</div>
+          <select class="yl-input f-activity">${activityOptions(r.activity)}</select>
+          <input class="yl-input f-name" type="text" maxlength="50" value="${escapeHtml(r.name)}" placeholder="이름" />
+          <input class="yl-input f-url" type="url" value="${escapeHtml(r.url)}" placeholder="https://..." style="grid-column:2 / 4" />
+          <div class="adm-actions">
+            <button class="btn-sm btn-save">저장</button>
+            <button class="btn-sm btn-del">삭제</button>
+          </div>
+        </div>`;
+    }
+
+    async function loadList() {
+      listMsg.textContent = "";
+      const { registrations } = await api("/api/registrations");
+      countEl.textContent = `총 ${registrations.length}건의 등록 자료`;
+      list.innerHTML = registrations.length
+        ? registrations.map(rowHtml).join("")
+        : `<p class="yl-sub">등록된 자료가 없습니다.</p>`;
+    }
+
+    function flash(text, ok = true) {
+      listMsg.className = "yl-msg " + (ok ? "ok" : "err");
+      listMsg.textContent = text;
+      setTimeout(() => { if (listMsg.textContent === text) listMsg.textContent = ""; }, 4000);
+    }
+
+    list.addEventListener("click", async (e) => {
+      const row = e.target.closest(".adm-row");
+      if (!row) return;
+      const id = Number(row.dataset.id);
+
+      if (e.target.classList.contains("btn-save")) {
+        const activity = Number(row.querySelector(".f-activity").value);
+        const name = row.querySelector(".f-name").value.trim();
+        const url = row.querySelector(".f-url").value.trim();
+        e.target.disabled = true; e.target.textContent = "저장 중";
+        try {
+          await adminCall({ action: "update", id, activity, name, url });
+          flash(`#${id} 저장되었습니다.`, true);
+        } catch (err) {
+          flash("⚠️ " + err.message, false);
+        } finally {
+          e.target.disabled = false; e.target.textContent = "저장";
+        }
+      }
+
+      if (e.target.classList.contains("btn-del")) {
+        const name = row.querySelector(".f-name").value.trim();
+        if (!confirm(`#${id} "${name}" 등록을 삭제할까요? (관련 당첨 기록도 함께 삭제됩니다)`)) return;
+        e.target.disabled = true;
+        try {
+          await adminCall({ action: "delete", id });
+          row.remove();
+          flash(`#${id} 삭제되었습니다.`, true);
+        } catch (err) {
+          e.target.disabled = false;
+          flash("⚠️ " + err.message, false);
+        }
+      }
+    });
+
+    async function authenticate(candidate) {
+      pw = candidate;
+      await adminCall({ action: "verify" }); // 실패 시 throw
+      sessionStorage.setItem(PW_KEY, pw);
+    }
+
+    async function showPanel() {
+      gate.style.display = "none";
+      panel.style.display = "block";
+      await loadList();
+    }
+
+    authBtn.addEventListener("click", async () => {
+      gateMsg.textContent = "";
+      gateMsg.className = "yl-msg";
+      authBtn.disabled = true; authBtn.textContent = "인증 중...";
+      try {
+        await authenticate(pwInput.value);
+        await showPanel();
+      } catch (err) {
+        gateMsg.className = "yl-msg err";
+        gateMsg.textContent = "⚠️ " + err.message;
+      } finally {
+        authBtn.disabled = false; authBtn.textContent = "인증하기";
+      }
+    });
+    pwInput.addEventListener("keydown", (e) => { if (e.key === "Enter") authBtn.click(); });
+
+    logoutBtn.addEventListener("click", () => {
+      sessionStorage.removeItem(PW_KEY);
+      pw = "";
+      panel.style.display = "none";
+      gate.style.display = "block";
+      pwInput.value = "";
+    });
+
+    // 세션에 비밀번호가 있으면 자동 인증 시도
+    if (pw) {
+      authenticate(pw).then(showPanel).catch(() => {
+        sessionStorage.removeItem(PW_KEY);
+        pw = "";
+      });
+    }
+  </script>
+</body>
+</html>
