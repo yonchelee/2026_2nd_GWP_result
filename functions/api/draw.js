@@ -32,15 +32,15 @@ export async function onRequestPost(context) {
 
   const prize = typeof body.prize === "string" ? body.prize.trim() : "";
 
-  // 대상 등록자 풀 조회
+  // 대상 등록자 풀 조회 — 이미 당첨된 사람(추첨함에서 빠진 공)은 제외
   let pool;
   if (scope === "all") {
     pool = await env.DB.prepare(
-      "SELECT id, name, activity FROM registrations"
+      "SELECT id, name, activity FROM registrations WHERE id NOT IN (SELECT registration_id FROM winners)"
     ).all();
   } else {
     pool = await env.DB.prepare(
-      "SELECT id, name, activity FROM registrations WHERE activity = ?"
+      "SELECT id, name, activity FROM registrations WHERE activity = ? AND id NOT IN (SELECT registration_id FROM winners)"
     )
       .bind(Number(scope))
       .all();
@@ -48,7 +48,7 @@ export async function onRequestPost(context) {
 
   const candidates = pool.results ?? [];
   if (candidates.length === 0) {
-    return badRequest("해당 범위에 등록자가 없습니다.");
+    return badRequest("해당 범위에 추첨할 남은 등록자가 없습니다.");
   }
 
   const picked = secureShuffle(candidates).slice(0, Math.min(count, candidates.length));
