@@ -14,7 +14,7 @@
   <script defer src="/js/site.js"></script>
   <style>
     /* ===== 추첨기(럭비공 추첨기) 비주얼 ===== */
-    .machine { position: relative; width: 340px; max-width: 92vw; margin: 0 auto; }
+    .machine { position: relative; width: var(--machine-w, 340px); max-width: 94vw; margin: 0 auto; transition: width .4s ease; }
     .drum-frame {
       position: relative; width: 100%; aspect-ratio: 1 / 0.96;
       clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
@@ -37,9 +37,9 @@
     }
     .ball {
       position: absolute; top: 0; left: 0;
-      width: 38px; height: 38px; border-radius: 50%;
+      width: var(--ball-d, 38px); height: var(--ball-d, 38px); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 9px; font-weight: 700; color: #334155;
+      font-size: var(--ball-fs, 9px); font-weight: 700; color: #334155;
       text-align: center; line-height: 1.0; padding: 0 2px;
       overflow: hidden; word-break: break-all;
       box-shadow: inset -5px -6px 9px rgba(0,0,0,.18), inset 4px 4px 7px rgba(255,255,255,.55), 0 2px 4px rgba(0,0,0,.18);
@@ -277,7 +277,7 @@
     }
 
     /* 드럼 물리 엔진 — 중력 + 벽 반사 + 공끼리 충돌, 회전 시 원심력 + 접선 견인 */
-    const BALL_R = 19;
+    let BALL_R = 19;            // 공 개수에 따라 동적으로 변경됨
     const GRAVITY = 0.5;
     const REST = 0.55;
     const AIR = 0.992;
@@ -369,17 +369,40 @@
       if (idx >= 0) { balls[idx].el.remove(); balls.splice(idx, 1); }
     }
 
+    // 공 개수 n 에 맞춰 추첨통 폭(w)과 공 지름(d)을 산출
+    function fitSize(n) {
+      const w = Math.round(Math.min(560, Math.max(320, 300 + n * 1.8)));
+      let d;
+      if (n <= 25) d = 38;
+      else if (n <= 50) d = 32;
+      else if (n <= 80) d = 27;
+      else if (n <= 120) d = 23;
+      else d = 20;
+      return { w, d };
+    }
+
+    const MAX_BALLS = 150; // 시각화 최대(한 활동 ~140명 커버)
+
     function renderPool(registrations) {
       ballsBox.innerHTML = "";
-      const { cx, cy, R } = drumGeom();
       const avail = registrations.filter((r) => !drawnIds.has(r.id));
-      const list = avail.slice(0, 30);
+      const list = avail.slice(0, MAX_BALLS);
+
+      // 공 개수에 맞춰 추첨통/공 크기 동적 조정
+      const { w, d } = fitSize(list.length);
+      BALL_R = d / 2;
+      machine.style.setProperty("--machine-w", w + "px");
+      machine.style.setProperty("--ball-d", d + "px");
+      machine.style.setProperty("--ball-fs", Math.max(7, Math.round(d * 0.26)) + "px");
+      const maxChars = d >= 30 ? 5 : d >= 24 ? 3 : 2;
+
+      const { cx, cy, R } = drumGeom(); // 크기 적용 후 재계산
       balls = list.map((r, i) => {
         const el = document.createElement("div");
         el.className = "ball";
         el.style.background = colorFor(i);
         el.title = r.name;
-        el.textContent = shortName(r.name);
+        el.textContent = r.name.length > maxChars ? r.name.slice(0, maxChars) : r.name;
         ballsBox.appendChild(el);
         const ang = Math.random() * Math.PI * 2;
         const rr = Math.random() * (R - 4);
